@@ -1,0 +1,51 @@
+{% load static %}
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Inventario{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'vendor/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'vendor/bootstrap-icons.min.css' %}">
+  <link rel="stylesheet" href="{% static 'inventario.css' %}">
+  <!--edzt-->
+</head>
+<body>
+{% if user.is_authenticated %}
+  {% firstof seccion request.resolver_match.url_name as actual %}
+  <a href="#contenido" class="visually-hidden-focusable skip-link">Ir al contenido</a>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="{% url 'inventario:panel' %}"><span class="brand-mark"><i class="bi bi-box-seam" aria-hidden="true"></i></span><span>Inventario</span></a>
+      <nav class="app-nav" aria-label="Navegación principal">
+        {% if perms.inventario.view_producto %}
+          <a href="{% url 'inventario:panel' %}" {% if actual == 'panel' %}aria-current="page"{% endif %}><i class="bi bi-grid" aria-hidden="true"></i> Panel general</a>
+          <a href="{% url 'inventario:productos' %}" {% if actual == 'productos' %}aria-current="page"{% endif %}><i class="bi bi-boxes" aria-hidden="true"></i> Productos</a>
+        {% endif %}
+        {% if perms.inventario.view_categoria %}
+          <a href="{% url 'inventario:categorias' %}" {% if actual == 'categorias' %}aria-current="page"{% endif %}><i class="bi bi-tags" aria-hidden="true"></i> Categorías</a>
+        {% endif %}
+        {% if perms.inventario.view_movimiento %}
+          <a href="{% url 'inventario:movimientos' %}" {% if actual == 'movimientos' %}aria-current="page"{% endif %}><i class="bi bi-arrow-left-right" aria-hidden="true"></i> Movimientos</a>
+        {% endif %}
+        {% if user.is_staff %}
+          <a href="{% url 'admin:index' %}"><i class="bi bi-gear" aria-hidden="true"></i> Administración</a>
+        {% endif %}
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="user-info"><span class="user-avatar"><i class="bi bi-person" aria-hidden="true"></i></span><span class="user-name" title="{{ user.get_username }}">{{ user.get_username }}</span></div>
+        <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="log-out" type="submit" aria-label="Cerrar sesión" title="Cerrar sesión"><i class="bi bi-box-arrow-right" aria-hidden="true"></i></button></form>
+      </div>
+    </aside>
+    <main class="main-content" id="contenido">
+      {% for message in messages %}
+        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags|default:'info' }}{% endif %}" role="status">{{ message }}</div>
+      {% endfor %}
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+{% else %}
+  {% block login %}{% endblock %}
+{% endif %}
+</body>
+</html>

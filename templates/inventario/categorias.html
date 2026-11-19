@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}Categorías · Inventario{% endblock %}
+{% block content %}
+<header class="page-heading">
+  <div><h1>Categorías</h1><p>Organiza los productos del catálogo.</p></div>
+  {% if perms.inventario.add_categoria %}
+    <a class="btn btn-primary" href="{% url 'inventario:crear_categoria' %}"><i class="bi bi-plus-lg" aria-hidden="true"></i> Nueva categoría</a>
+  {% endif %}
+</header>
+<div class="surface">
+  <div class="table-responsive"><table class="table app-table mb-0">
+    <thead><tr><th scope="col">Nombre</th><th scope="col">Productos asociados</th>{% if perms.inventario.change_categoria %}<th scope="col">Acciones</th>{% endif %}</tr></thead>
+    <tbody>
+    {% for categoria in pagina %}
+      <tr><td class="row-title">{{ categoria.nombre }}</td><td>{{ categoria.total_productos }}</td>
+      {% if perms.inventario.change_categoria %}<td><a class="btn btn-outline-secondary btn-sm" href="{% url 'inventario:editar_categoria' categoria.pk %}">Editar</a></td>{% endif %}</tr>
+    {% empty %}
+      <tr><td class="empty-cell" colspan="{% if perms.inventario.change_categoria %}3{% else %}2{% endif %}">Aún no hay categorías registradas.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  {% include 'includes/paginacion.html' %}
+</div>
+{% endblock %}

@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block title %}Panel general · Inventario{% endblock %}
+{% block content %}
+<header class="page-heading">
+  <div><h1>Panel general</h1><p>Consulta las existencias y la actividad reciente del almacén.</p></div>
+  {% if perms.inventario.add_movimiento %}
+    <a class="btn btn-primary" href="{% url 'inventario:crear_movimiento' %}"><i class="bi bi-plus-lg" aria-hidden="true"></i> Registrar movimiento</a>
+  {% endif %}
+</header>
+<div class="row g-3 mb-4">
+  <div class="col-6 col-xl">
+    <a class="surface metric" href="{% url 'inventario:productos' %}?estado=activo">
+      <span class="metric-icon icon-blue"><i class="bi bi-box-seam" aria-hidden="true"></i></span>
+      <span class="metric-label">Productos activos</span><strong>{{ indicadores.productos }}</strong>
+    </a>
+  </div>
+  <div class="col-6 col-xl">
+    <a class="surface metric" href="{% url 'inventario:productos' %}?estado=bajo">
+      <span class="metric-icon icon-amber"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i></span>
+      <span class="metric-label">Stock bajo</span><strong>{{ indicadores.stock_bajo }}</strong>
+    </a>
+  </div>
+  <div class="col-6 col-xl">
+    <a class="surface metric" href="{% url 'inventario:productos' %}?estado=agotado">
+      <span class="metric-icon icon-red"><i class="bi bi-dash-circle" aria-hidden="true"></i></span>
+      <span class="metric-label">Agotados</span><strong>{{ indicadores.agotados }}</strong>
+    </a>
+  </div>
+  {% if perms.inventario.view_categoria %}
+  <div class="col-6 col-xl">
+    <a class="surface metric" href="{% url 'inventario:categorias' %}">
+      <span class="metric-icon icon-teal"><i class="bi bi-tags" aria-hidden="true"></i></span>
+      <span class="metric-label">Categorías</span><strong>{{ total_categorias }}</strong>
+    </a>
+  </div>
+  {% endif %}
+</div>
+<div class="row g-3">
+  <section class="col-12 {% if perms.inventario.view_movimiento %}col-xl-7{% endif %}" aria-labelledby="alertas">
+    <div class="surface h-100">
+      <div class="section-header">
+        <div><h2 id="alertas">Alertas de stock</h2><p>Productos con existencias en su mínimo o por debajo.</p></div>
+        <a class="section-link" href="{% url 'inventario:productos' %}?estado=bajo">Ver alertas <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+      </div>
+      <div class="table-responsive">
+        <table class="table app-table mb-0">
+          <thead><tr><th scope="col">Producto</th><th scope="col">Stock</th><th scope="col">Mínimo</th><th scope="col">Estado</th></tr></thead>
+          <tbody>
+          {% for producto in alertas %}
+            <tr><td><span class="row-title">{{ producto.nombre }}</span><span class="row-detail">{{ producto.sku }} · {{ producto.categoria }}</span></td><td>{{ producto.stock }}</td><td>{{ producto.stock_minimo }}</td><td>{% include 'includes/estado.html' %}</td></tr>
+          {% empty %}
+            <tr><td class="empty-cell" colspan="4"><i class="bi bi-check2-circle" aria-hidden="true"></i> No hay alertas de stock.</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+  {% if perms.inventario.view_movimiento %}
+  <section class="col-12 col-xl-5" aria-labelledby="actividad">
+    <div class="surface h-100">
+      <div class="section-header">
+        <div><h2 id="actividad">Actividad reciente</h2><p>Últimas entradas y salidas registradas.</p></div>
+        <a class="section-link" href="{% url 'inventario:movimientos' %}">Ver historial <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+      </div>
+      {% for movimiento in ultimos_movimientos %}
+        <div class="activity-row">
+          <span class="activity-icon {% if movimiento.tipo == 'E' %}icon-teal{% else %}icon-blue{% endif %}"><i class="bi {% if movimiento.tipo == 'E' %}bi-arrow-down-left{% else %}bi-arrow-up-right{% endif %}" aria-hidden="true"></i></span>
+          <div class="flex-grow-1 text-break"><span class="row-title">{{ movimiento.producto.nombre }}</span><span class="row-detail">{{ movimiento.get_tipo_display }} · {{ movimiento.fecha|date:"d/m/Y H:i" }}</span></div>
+          <strong class="text-nowrap">{% if movimiento.tipo == 'E' %}+{% else %}−{% endif %}{{ movimiento.cantidad }}</strong>
+        </div>
+      {% empty %}
+        <p class="empty-cell mb-0">Aún no hay movimientos registrados.</p>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+</div>
+{% endblock %}

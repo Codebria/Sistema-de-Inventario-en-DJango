@@ -1,0 +1,9 @@
+{% if not producto.activo %}
+  <span class="status status-muted">Inactivo</span>
+{% elif producto.stock == 0 %}
+  <span class="status status-red">Agotado</span>
+{% elif producto.stock_bajo %}
+  <span class="status status-amber">Stock bajo</span>
+{% else %}
+  <span class="status status-teal">Disponible</span>
+{% endif %}

@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}Productos · Inventario{% endblock %}
+{% block content %}
+<header class="page-heading">
+  <div><h1>Productos</h1><p>Gestiona el catálogo y consulta las existencias de cada producto.</p></div>
+  {% if perms.inventario.add_producto %}
+    <a class="btn btn-primary" href="{% url 'inventario:crear_producto' %}"><i class="bi bi-plus-lg" aria-hidden="true"></i> Nuevo producto</a>
+  {% endif %}
+</header>
+<div class="surface">
+  <form class="row g-2 p-3 align-items-end" method="get">
+    <div class="col-12 col-md"><label class="form-label" for="q">Buscar</label><input class="form-control" id="q" name="q" placeholder="Nombre o código SKU" value="{{ consulta }}"></div>
+    <div class="col-6 col-md-3"><label class="form-label" for="categoria">Categoría</label>
+      <select class="form-select" name="categoria" id="categoria"><option value="">Todas</option>
+        {% for categoria in categorias %}<option value="{{ categoria.pk }}" {% if categoria_actual == categoria.pk|stringformat:'s' %}selected{% endif %}>{{ categoria.nombre }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="col-6 col-md-3"><label class="form-label" for="estado">Estado</label>
+      <select class="form-select" name="estado" id="estado">
+        <option value="">Todos</option>
+        <option value="activo" {% if estado == 'activo' %}selected{% endif %}>Activos</option>
+        <option value="bajo" {% if estado == 'bajo' %}selected{% endif %}>Stock bajo</option>
+        <option value="agotado" {% if estado == 'agotado' %}selected{% endif %}>Agotados</option>
+        <option value="inactivo" {% if estado == 'inactivo' %}selected{% endif %}>Inactivos</option>
+      </select>
+    </div>
+    <div class="col-auto"><button type="submit" class="btn btn-outline-primary">Filtrar</button></div>
+    {% if consulta or estado or categoria_actual %}<div class="col-auto"><a class="btn btn-link" href="{% url 'inventario:productos' %}">Limpiar</a></div>{% endif %}
+  </form>
+  <div class="table-responsive"><table class="table app-table mb-0">
+    <thead><tr><th scope="col">Producto</th><th scope="col">Categoría</th><th scope="col">Stock</th><th scope="col">Mínimo</th><th scope="col">Estado</th><th scope="col">Acciones</th></tr></thead>
+    <tbody>
+    {% for producto in pagina %}
+      <tr>
+        <td><span class="row-title">{{ producto.nombre }}</span><span class="row-detail">{{ producto.sku }}</span></td>
+        <td>{{ producto.categoria }}</td><td><strong>{{ producto.stock }}</strong> <span class="row-detail d-inline">{{ producto.unidad }}</span></td><td>{{ producto.stock_minimo }}</td>
+        <td>{% include 'includes/estado.html' %}</td>
+        <td class="text-nowrap">
+          {% if perms.inventario.change_producto %}<a class="btn btn-outline-secondary btn-sm" href="{% url 'inventario:editar_producto' producto.pk %}" aria-label="Editar {{ producto.nombre }}" title="Editar"><i class="bi bi-pencil" aria-hidden="true"></i></a>{% endif %}
+          {% if perms.inventario.add_movimiento and producto.activo %}<a class="btn btn-outline-secondary btn-sm" href="{% url 'inventario:crear_movimiento' %}?producto={{ producto.pk }}" aria-label="Registrar movimiento para {{ producto.nombre }}" title="Registrar movimiento"><i class="bi bi-arrow-left-right" aria-hidden="true"></i></a>{% endif %}
+        </td>
+      </tr>
+    {% empty %}<tr><td class="empty-cell" colspan="6">No se encontraron productos.</td></tr>{% endfor %}
+    </tbody>
+  </table></div>
+  {% include 'includes/paginacion.html' %}
+</div>
+{% endblock %}

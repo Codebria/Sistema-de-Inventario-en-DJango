@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block title %}Iniciar sesión · Inventario{% endblock %}
+{% block login %}
+<main class="login-wrapper">
+  <div class="surface login-card">
+    <span class="brand-mark mb-3"><i class="bi bi-box-seam" aria-hidden="true"></i></span>
+    <h1>Inventario</h1>
+    <p class="text-secondary mb-4">Inicia sesión con tu cuenta.</p>
+    <form method="post">
+      {% csrf_token %}
+      {% include 'includes/campos.html' %}
+      {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+      <button class="btn btn-primary w-100 mt-2" type="submit">Ingresar</button>
+    </form>
+  </div>
+</main>
+{% endblock %}
